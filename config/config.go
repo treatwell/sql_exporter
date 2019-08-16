@@ -3,6 +3,7 @@ package config
 import (
 	"fmt"
 	"io/ioutil"
+	"os"
 	"path/filepath"
 	"strings"
 	"time"
@@ -195,6 +196,12 @@ func (t *TargetConfig) UnmarshalYAML(unmarshal func(interface{}) error) error {
 	type plain TargetConfig
 	if err := unmarshal((*plain)(t)); err != nil {
 		return err
+	}
+
+	// Environment variable DATA_SOURCE_NAME overrides any value from config
+	env_dsn, env_dsn_exists := os.LookupEnv("DATA_SOURCE_NAME")
+	if env_dsn_exists {
+		t.DSN = Secret(env_dsn)
 	}
 
 	// Check required fields
